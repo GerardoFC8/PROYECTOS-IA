@@ -1,0 +1,21 @@
+{
+  "name": "github-dashboard",
+  "version": "1.0.0",
+  "description": "GitHub Stats CLI en tiempo real - Dia 1 con IA",
+  "main": "dashboard.js",
+  "type": "module",
+  "bin": {
+    "gh-dashboard": "./dashboard.js"
+  },
+  "scripts": {
+    "start": "node dashboard.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "chalk": "^5.3.0",
+    "cli-table3": "^0.6.3",
+    "figlet": "^1.7.0",
+    "gradient-string": "^2.0.2",
+    "ora": "^8.0.1"
+  }
+}
