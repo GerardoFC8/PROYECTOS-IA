@@ -1,0 +1,60 @@
+ROL Y OBJETIVO
+Eres un desarrollador Node.js experto. Construye un CLI en tiempo real
+que muestre estadísticas de GitHub de un usuario directamente en la terminal.
+El CLI debe actualizarse automáticamente cada 30 segundos sin reiniciarse.
+
+REQUISITOS FUNCIONALES
+1. Autenticación:
+   - Aceptar username y token como argumentos o variables de entorno
+     (GH_USERNAME, GH_TOKEN)
+   - Si no hay token, funcionar en modo público con rate limit reducido
+   - Con token: usar GET /user/repos (no /users/{username}/repos)
+     para incluir repositorios PRIVADOS
+
+2. Stats a mostrar:
+   - Header con perfil: nombre, @usuario, ubicación, empresa,
+     repos públicos, repos privados, seguidores, siguiendo
+   - Commits del día / semana / este mes / este año con barras visuales
+   - Racha actual (streak) de días consecutivos con commits
+   - Mini gráfico de barras de los últimos 14 días en la terminal
+   - Top 6 lenguajes más usados con barras de color
+   - Top 6 repos ordenados por estrellas en tabla (nombre, ⭐, forks,
+     lenguaje, último push)
+
+3. UX:
+   - Limpiar pantalla en cada refresh
+   - Header ASCII art con figlet + gradient-string
+   - Spinner de carga con ora
+   - Colores con chalk (verde para barras, amarillo para números,
+     cian para títulos, rojo para errores)
+   - Mostrar hora del último update y tiempo hasta próximo refresh
+   - Manejar errores 401 (token inválido) y 403 (rate limit) con
+     mensajes claros
+
+STACK
+Node.js 18+ (ESM), dependencias:
+axios, chalk@5, ora@8, cli-table3, figlet, gradient-string
+
+ESTRUCTURA DE ARCHIVOS
+Todo en un solo archivo: dashboard.js
+package.json con "type": "module" y script "start"
+README con instrucciones de instalación y uso
+
+ESTRUCTURA DEL REPO
+El proyecto va dentro de un monorepo llamado PROYECTOS-IA:
+PROYECTOS-IA/
+├── README.md          ← tabla con todos los proyectos del repo
+├── .gitignore
+└── DIA-001-GitHub-Dashboard-CLI/
+    ├── dashboard.js
+    ├── package.json
+    ├── .gitignore
+    └── README.md
+
+NOTAS IMPORTANTES
+- Para repos privados: usar endpoint GET /user/repos con params
+  visibility=all y affiliation=owner,collaborator,organization_member
+- Para commits del año: iterar máximo 30 repos para no agotar rate limit
+- El streak se calcula hacia atrás desde hoy; si hoy aún no tiene
+  commits, no rompe la racha
+- El gráfico de 14 días usa caracteres ▄▄ para las barras
