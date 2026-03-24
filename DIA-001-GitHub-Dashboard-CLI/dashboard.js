@@ -10,7 +10,7 @@ import readline from "readline";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 const GITHUB_API = "https://api.github.com";
-const REFRESH_INTERVAL = 30_000; // 30 seconds live refresh
+const REFRESH_INTERVAL = 300_000; // 5 minutes live refresh
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -80,10 +80,10 @@ async function fetchRepos(token, username) {
   return repos;
 }
 
-async function fetchCommitsForRepo(token, username, repo, since) {
+async function fetchCommitsForRepo(token, username, repoFullName, since) {
   try {
     const res = await axios.get(
-      `${GITHUB_API}/repos/${username}/${repo}/commits`,
+      `${GITHUB_API}/repos/${repoFullName}/commits`,
       {
         headers: {
           ...(token ? { Authorization: `token ${token}` } : {}),
@@ -102,7 +102,7 @@ async function fetchAllCommits(token, username, repos, since) {
   const all = await Promise.all(
     repos
       .slice(0, 30) // top 30 repos para no agotar rate limit
-      .map((r) => fetchCommitsForRepo(token, username, r.name, since))
+      .map((r) => fetchCommitsForRepo(token, username, r.full_name, since))
   );
   return all.flat();
 }
@@ -162,6 +162,11 @@ function commitsLast(byDay, days) {
     .reduce((s, [, v]) => s + v, 0);
 }
 
+function commitsToday(byDay) {
+  const todayKey = new Date().toISOString().slice(0, 10);
+  return byDay[todayKey] || 0;
+}
+
 function commitsThisMonth(byDay) {
   const now = new Date();
   const prefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
@@ -176,7 +181,7 @@ function renderHeader(user, lastUpdated, privateRepos = 0, publicRepos = 0) {
   console.log(gradient.pastel(title));
   console.log(
     chalk.gray(`  Actualizado: ${lastUpdated}`) +
-      chalk.gray(`  •  Rate: cada 30s`) +
+      chalk.gray(`  •  Rate: cada 5min`) +
       chalk.gray(`  •  Ctrl+C para salir\n`)
   );
 
@@ -201,7 +206,7 @@ function renderHeader(user, lastUpdated, privateRepos = 0, publicRepos = 0) {
 function renderCommitStats(byDay, streak) {
   console.log(chalk.bold.cyan("  📊 ACTIVIDAD DE COMMITS\n"));
 
-  const today = commitsLast(byDay, 1);
+  const today = commitsToday(byDay);
   const week = commitsLast(byDay, 7);
   const month = commitsThisMonth(byDay);
   const year = commitsLast(byDay, 365);
@@ -382,7 +387,7 @@ async function run() {
       renderTopRepos(repos);
 
       console.log(chalk.gray("  ─".repeat(35)));
-      console.log(chalk.gray(`  ⟳  Próxima actualización en 30s…  Ctrl+C para salir`));
+      console.log(chalk.gray(`  ⟳  Próxima actualización en 5min…  Ctrl+C para salir`));
 
       firstRun = false;
     } catch (err) {
